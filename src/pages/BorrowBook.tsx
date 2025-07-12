@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useBorrowBookMutation } from "@/redux/api/baseApi";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Plus } from "lucide-react";
 import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
@@ -76,106 +76,151 @@ const BorrowBook = () => {
   };
 
   return (
-    <div className=" max-w-xl mx-auto px-12 py-12 my-12 shadow-md rounded-xl  bg-center ">
-      <h1 className=" py-1.5 ml-2 text-2xl font-bold mb-8 text-center mx-auto w-[50%] text-black rounded-sm bg-amber-300 ">
-        Borrow Book
-      </h1>
-      {/* error handle */}
-      {isLoading && (
-        <p className="text-blue-600 text-center mb-4">Creating book...</p>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-48">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
+        {/* error handle */}
+        <div>
+          {isLoading && (
+            <p className="text-blue-600 text-center mb-4">Creating book...</p>
+          )}
 
-      {isError && (
-        <p className="text-red-600 text-center mb-4">
-          Failed to create book. Please try again.
-        </p>
-      )}
+          {isError && (
+            <p className="text-red-600 text-center mb-4">
+              Failed to create book. Please try again.
+            </p>
+          )}
 
-      {data && (
-        <p className="text-green-600 text-center mb-4">{data.message}</p>
-      )}
+          {data && (
+            <p className="text-green-600 text-center mb-4">{data.message}</p>
+          )}
+        </div>
+        ;
+        <div className="mb-6">
+          <button
+            onClick={() => navigate("/books")}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Books</span>
+          </button>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-[#fb8500] to-[#ffb703] px-8 py-6">
+            <div className="flex items-center space-x-3 text-[#023047]">
+              <Plus className="h-8 w-8" />
+              <div>
+                <h1 className="text-2xl font-bold">Borrow Book</h1>
+                <p className="text-[#023047]">
+                  {" "}
+                  Borrow book entry in your library
+                </p>
+              </div>
+            </div>
+          </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Borrowed Name */}
-          <FormField
-            control={form.control}
-            name="borrowerName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Borrow Name</FormLabel>
-                <FormControl>
-                  <Input className="" {...field} value={field.value || ""} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          {/* Quantity */}
-          <FormField
-            control={form.control}
-            name="quantity"
-            rules={{ required: true, min: 1 }}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Borrow Quantity</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={1}
-                    {...field}
-                    value={field.value || ""}
+          {/* Form  */}
+          <div className="  text-gray-700 p-8 ">
+            {/* Author */}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                {/* Borrowed Name */}
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="borrowerName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Borrow Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          {/* dueDate */}
-          <FormField
-            control={form.control}
-            name="dueDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Due Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          " pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Select a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      captionLayout="dropdown"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-            )}
-          />
+                </div>
 
-          <DialogFooter>
-            <Button type="submit" className="mt-6">
-              Submit Book
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
+                {/* Quantity */}
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="quantity"
+                    rules={{ required: true, min: 1 }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Borrow Quantity</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            {...field}
+                            defaultValue={1}
+                            value={field.value || ""}
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {/* dueDate */}
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="dueDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Due Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  " pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Select a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              captionLayout="dropdown"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="w-full mt-4 bg-gradient-to-r from-[#fb8500] to-[#ffb703] text-[#023047] hover:bg-blue-700"
+                  >
+                    Borrow Book
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -15,7 +15,15 @@ const initialState: InitialState = {
 // reducer part => 1
 type DraftBook = Pick<
   IBook,
-  "title" | "author" | "genre" | "isbn" | "copies" | "description" | "image"
+  | "title"
+  | "author"
+  | "genre"
+  | "isbn"
+  | "copies"
+  | "description"
+  | "image"
+  | "createdAt"
+  | "updatedAt"
 >;
 
 // reducer part => 2

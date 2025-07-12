@@ -25,11 +25,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateBookMutation } from "@/redux/api/baseApi";
+import { Plus } from "lucide-react";
+import { nanoid } from "nanoid";
+import { useState } from "react";
 import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export function AddBookModal() {
+  const [open, setOpen] = useState(false);
   const form = useForm();
 
   const [createBook, { data, isLoading, isError }] = useCreateBookMutation();
@@ -38,14 +42,15 @@ export function AddBookModal() {
     const bookData = {
       ...data,
       available: true,
+      isbn: nanoid(),
     };
 
     try {
       const response = await createBook(bookData).unwrap();
-      toast.success(response.message || "Book borrowed successfully!", {
+      toast.success(response.message || "Book Add successfully!", {
         position: "top-center",
       });
-
+      setOpen(false);
       form.reset();
     } catch (error: unknown) {
       let message = "Something went wrong";
@@ -82,17 +87,15 @@ export function AddBookModal() {
       {isLoading && (
         <p className="text-blue-600 text-center mb-4">Creating book...</p>
       )}
-
       {isError && (
         <p className="text-red-600 text-center mb-4">
           Failed to create book. Please try again.
         </p>
       )}
-
       {data && (
         <p className="text-green-600 text-center mb-4">{data.message}</p>
       )}
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="bg-sky-600 hover:bg-orange-600 text-white rounded-lg ">
             <h1 className="px-4 py-2 text-xl font-bold">+ Add New Book</h1>
@@ -104,11 +107,12 @@ export function AddBookModal() {
             Fill up this form to add book
           </DialogDescription>
           <DialogHeader>
-            <DialogTitle className="text-center bg-sky-500 text-black mx-18 px-12 py-1 rounded-md text-2xl font-bold my-2">
-              {" "}
-              + Add Book{" "}
+            <DialogTitle className="flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-2xl font-semibold rounded-t-lg shadow-md py-3 px-4">
+              <Plus className="h-5 w-5" />
+              <span>Add Book</span>
             </DialogTitle>
           </DialogHeader>
+
           {/* From */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -138,19 +142,7 @@ export function AddBookModal() {
                   </FormItem>
                 )}
               />
-              {/* ISBN */}
-              <FormField
-                control={form.control}
-                name="isbn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ISBN</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+
               {/* Genre */}
               <FormField
                 control={form.control}
@@ -192,8 +184,9 @@ export function AddBookModal() {
                       <Input
                         type="number"
                         min={1}
+                        defaultValue={1}
                         {...field}
-                        value={field.value || ""}
+                        value={field.value || "1"}
                       />
                     </FormControl>
                   </FormItem>
@@ -234,7 +227,7 @@ export function AddBookModal() {
 
               <DialogFooter>
                 <Button type="submit" className="mt-2">
-                  Submit Book
+                  Add Book
                 </Button>
               </DialogFooter>
             </form>

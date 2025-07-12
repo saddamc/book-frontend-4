@@ -8,11 +8,8 @@ export interface IBook {
   copies: number;
   available: boolean;
   image: string;
-}
-
-export interface IUser {
-  id: string;
-  name: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface IBorrow {
@@ -56,3 +53,16 @@ export type BorrowSummaryItem = {
   };
   totalQuantity: number;
 };
+
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  genre: string;
+  isbn: string;
+  description: string;
+  copies: number;
+  available: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
