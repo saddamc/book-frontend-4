@@ -22,7 +22,7 @@ const Books = () => {
     error: any;
   };
   const books: IBook[] | undefined = responseData?.data;
-  console.log("All Books", books);
+  // console.log("All Books", books);
 
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,7 +66,7 @@ const Books = () => {
     <div>
       {/* Search Option  */}
       <div className="bg-gradient-to-br from-[#0d41e1] to-[#1b4ce0]  shadow-3xl ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8  ">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 pt-8  ">
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -118,7 +118,7 @@ const Books = () => {
 
       {/* BookCard filter  */}
       <div className="min-h-screen bg-gradient-to-br from-[#e5e5e5] to-[#f1dddd] ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-24 ">
           {filteredBooks?.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600">No books found</p>
@@ -126,7 +126,7 @@ const Books = () => {
           ) : (
             <>
               {viewMode === "grid" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredBooks.map((book) => (
                     <BookCard
                       key={book._id}

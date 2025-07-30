@@ -15,10 +15,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useBorrowBookMutation } from "@/redux/api/baseApi";
+import {
+  useBorrowBookMutation,
+  useGetBookByIdQuery,
+} from "@/redux/api/baseApi";
 import { format } from "date-fns";
 import { ArrowLeft, CalendarIcon, Plus } from "lucide-react";
 import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
+import { Atom, ThreeDot } from "react-loading-indicators";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -30,9 +34,14 @@ const BorrowBook = () => {
   const { bookId } = useParams();
 
   const [borrowBook, { data, isLoading, isError }] = useBorrowBookMutation();
+  const { data: borrowData, isLoading: borrowloading } = useGetBookByIdQuery(
+    bookId!
+  );
+  const borrow = borrowData?.data;
+  console.log("Borrow", borrow);
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    // console.log("Submiting data:", data);  // for check data from Form submit
+    // console.log("Submiting data:", data); // for check data from Form submit
 
     const borrowData = {
       borrowerName: data.borrowerName,
@@ -48,6 +57,7 @@ const BorrowBook = () => {
       navigate("/books");
       form.reset();
     } catch (error: unknown) {
+      // console.log("api:", error);
       let message = "Something went wrong";
 
       if (
@@ -74,25 +84,32 @@ const BorrowBook = () => {
       toast.error(message, { position: "top-center" });
     }
   };
+  if (isLoading || borrowloading) {
+    return (
+      <h1 className="mx-auto text-center items-center justify-center my-40">
+        <Atom color="#32cd32" size="large" text="" textColor="" />;
+      </h1>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-48">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
         {/* error handle */}
         <div>
-          {isLoading && (
-            <p className="text-blue-600 text-center mb-4">Creating book...</p>
-          )}
-
           {isError && (
-            <p className="text-red-600 text-center mb-4">
-              Failed to create book. Please try again.
+            <p className=" mx-auto flex justify-center items-center text-red-600">
+              <h1 className="mr-2">FAILED! try again </h1>
+              <ThreeDot
+                color="#e50a2e"
+                size="small"
+                // text="Failed! try again"
+                textColor="#ed1111"
+              />
             </p>
           )}
 
-          {data && (
-            <p className="text-green-600 text-center mb-4">{data.message}</p>
-          )}
+          {data && <Atom color="#32cd32" size="small" text="" textColor="" />}
         </div>
         ;
         <div className="mb-6">
@@ -117,10 +134,31 @@ const BorrowBook = () => {
               </div>
             </div>
           </div>
+          {/* book details */}
+          <div className=" border-b border-gray-200 px-6 py-4 rounded-t-xl shadow-sm">
+            <div className="rounded-2xl">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {borrow.title}
+                </h3>
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
+                  Available: {borrow.copies}{" "}
+                  {borrow.copies === 1 ? "copy" : "copies"}
+                </span>
+              </div>
+              <p className="text-sm text-gray-700 mb-1">
+                <span className="font-medium text-gray-800">Author:</span>{" "}
+                {borrow.author}
+              </p>
+              <p className="text-sm text-gray-700">
+                <span className="font-medium text-gray-800">Genre:</span>{" "}
+                {borrow.genre}
+              </p>
+            </div>
+          </div>
 
           {/* Form  */}
-          <div className="  text-gray-700 p-8 ">
-            {/* Author */}
+          <div className="  text-gray-700 p-8 bg-gray-50  ">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 {/* Borrowed Name */}
@@ -130,12 +168,13 @@ const BorrowBook = () => {
                     name="borrowerName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Borrow Name</FormLabel>
+                        <FormLabel>Your Name</FormLabel>
                         <FormControl>
                           <Input
                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
                             {...field}
                             value={field.value || ""}
+                            placeholder="Your Name"
                           />
                         </FormControl>
                       </FormItem>
@@ -144,51 +183,72 @@ const BorrowBook = () => {
                 </div>
 
                 {/* Quantity */}
-                <div>
+                <div className="mt-2.5">
                   <FormField
                     control={form.control}
                     name="quantity"
-                    rules={{ required: true, min: 1 }}
-                    render={({ field }) => (
+                    rules={{
+                      required: "Quantity is required",
+                      min: { value: 1, message: "Minimum quantity is 1" },
+                    }}
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Borrow Quantity</FormLabel>
+                        <FormLabel>
+                          Quantity{" "}
+                          <span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
+                            {...field}
                             type="number"
                             min={1}
-                            {...field}
-                            defaultValue={1}
-                            value={field.value || ""}
-                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
+                            max={borrow?.copies}
+                            placeholder="Number of Copies"
+                            className={cn(
+                              "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2",
+                              fieldState.invalid
+                                ? "border-red-500 focus:ring-red-500"
+                                : "focus:ring-blue-500"
+                            )}
                           />
                         </FormControl>
+                        {fieldState.error && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {fieldState.error.message}
+                          </p>
+                        )}
                       </FormItem>
                     )}
                   />
                 </div>
                 {/* dueDate */}
-                <div>
+                <div className="mt-2.5">
                   <FormField
                     control={form.control}
                     name="dueDate"
-                    render={({ field }) => (
+                    rules={{ required: "Due date is required" }}
+                    render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Due Date</FormLabel>
+                        <FormLabel>
+                          Due Date{" "}
+                          <span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
                                 variant={"outline"}
                                 className={cn(
-                                  " pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
+                                  "pl-3 text-left font-normal w-full",
+                                  !field.value && "text-muted-foreground",
+                                  fieldState.invalid
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "focus:ring-blue-500"
                                 )}
                               >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Select a date</span>
-                                )}
+                                {field.value
+                                  ? format(field.value, "PPP")
+                                  : "Select a date"}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
@@ -196,13 +256,18 @@ const BorrowBook = () => {
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
                               selected={field.value}
                               onSelect={field.onChange}
                               captionLayout="dropdown"
+                              className="rounded-md border shadow"
                             />
                           </PopoverContent>
                         </Popover>
+                        {fieldState.error && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {fieldState.error.message}
+                          </p>
+                        )}
                       </FormItem>
                     )}
                   />
@@ -211,7 +276,9 @@ const BorrowBook = () => {
                 <DialogFooter>
                   <Button
                     type="submit"
-                    className="w-full mt-4 bg-gradient-to-r from-[#fb8500] to-[#ffb703] text-[#023047] hover:bg-blue-700"
+                    className={`w-full mt-4 bg-gradient-to-r from-[#fb8500] to-[#ffb703] text-[#023047] hover:bg-blue-700 ${
+                      isLoading ? "cursor-not-allowed" : "cursor-pointer"
+                    }`}
                   >
                     Borrow Book
                   </Button>

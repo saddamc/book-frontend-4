@@ -7,28 +7,25 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useGetBookByIdQuery,
   useUpdateBookMutation,
 } from "@/redux/api/baseApi";
-import type { IBook } from "@/types";
+import { updateBookSchema } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Edit } from "lucide-react";
-
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import type z from "zod";
+
+type BookFormData = z.infer<typeof updateBookSchema>;
 
 const EditBook = () => {
   const { id } = useParams();
@@ -38,7 +35,18 @@ const EditBook = () => {
 
   const book = responseData?.data;
 
-  const form = useForm<IBook>();
+  // Zod
+  const form = useForm<BookFormData>({
+    resolver: zodResolver(updateBookSchema),
+    defaultValues: {
+      title: "",
+      author: "",
+      genre: "",
+      copies: 1,
+      image: "",
+      description: "",
+    },
+  });
 
   useEffect(() => {
     if (book) {
@@ -46,10 +54,10 @@ const EditBook = () => {
     }
   }, [book, form]);
 
-  const onSubmit = async (updatedData: IBook) => {
+  const onSubmit = async (updatedData: BookFormData) => {
     try {
       await updateBook({ id, data: updatedData }).unwrap();
-      toast.success("Book updated successful");
+      toast.success("Book updated successfully!");
       navigate("/books");
     } catch {
       toast.error(" Failed to update book");
@@ -72,7 +80,7 @@ const EditBook = () => {
           </button>
         </div>
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+          <div className="bg-gradient-to-r from-[#20a4f3] to-[#2398db] px-8 py-6">
             <div className="flex items-center space-x-3 text-white">
               <Edit className="h-8 w-8" />
               <div>
@@ -89,123 +97,136 @@ const EditBook = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* Title */}
-                  <div>
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
-                          {...form.register("title")}
-                          placeholder="Book Title"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Title<span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Book Title"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-required="true"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Author */}
-                  <div>
-                    <FormItem>
-                      <FormLabel>Author</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...form.register("author")}
-                          placeholder="Author Name"
-                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Author
+                          <span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Author Name"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-required="true"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Genre */}
+                  <FormField
+                    control={form.control}
+                    name="genre"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Genre<span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Genre"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-required="true"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   {/* ISBN */}
-                  <div>
-                    <FormItem>
-                      <FormLabel>ISBN</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...form.register("isbn")}
-                          placeholder="ISBN Number"
-                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-
-                  {/* Image URL */}
-                  <div>
-                    <FormItem>
-                      <FormLabel>Image URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...form.register("image")}
-                          placeholder="Image URL"
-                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="isbn"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          ISBN<span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Genre"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-required="true"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Copies */}
-                  <div>
-                    <FormItem>
-                      <FormLabel>Copies</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...form.register("copies")}
-                          type="number"
-                          placeholder="Number of Copies"
-                          min={1}
-                          max={book.copies}
-                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-
-                  {/* Genre Dropdown */}
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="genre"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Genre</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || ""}
-                            defaultValue={field.value}
-                            required
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 `}
-                              >
-                                <SelectValue placeholder="Select Genre" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="FICTION">Fiction</SelectItem>
-                              <SelectItem value="SCIENCE">Science</SelectItem>
-                              <SelectItem value="FANTASY">Fantasy</SelectItem>
-                              <SelectItem value="TECHNOLOGY">
-                                Technology
-                              </SelectItem>
-                              <SelectItem value="BIOGRAPHY">
-                                Biography
-                              </SelectItem>
-                              <SelectItem value="SCI-FI">Sci-Fi</SelectItem>
-                              <SelectItem value="NON_FICTION">
-                                Non-Fiction
-                              </SelectItem>
-                              <SelectItem value="HISTORY">History</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="copies"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Copies
+                          <span className="text-red-500 font-bold">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            placeholder="Number of Copies"
+                            min={1}
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-required="true"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Image URL */}
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Image URL"
+                            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Description */}
@@ -224,9 +245,12 @@ const EditBook = () => {
                 <DialogFooter>
                   <Button
                     type="submit"
-                    className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                    disabled={isLoading}
+                    className={`w-full bg-gradient-to-r from-[#20a4f3] to-[#2398db] text-white hover:bg-blue-700 ${
+                      isLoading ? "cursor-not-allowed" : "cursor-pointer"
+                    }`}
                   >
-                    Update Book
+                    {isLoading ? "Updating..." : "Updated Book"}
                   </Button>
                 </DialogFooter>
               </form>

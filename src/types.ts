@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface IBook {
   _id: string;
   title: string;
@@ -66,3 +68,21 @@ export interface Book {
   createdAt: string;
   updatedAt: string;
 }
+
+export const bookSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  author: z.string().min(1, "Author is required"),
+  genre: z.string().min(1, "Genre is required"),
+  copies: z.coerce.number().int().min(1, "Quantity must be 1 or more"),
+  image: z.string().optional(),
+  description: z.string().optional(),
+});
+export const updateBookSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  author: z.string().min(1, "Author is required"),
+  genre: z.string().min(1, "Genre is required"),
+  isbn: z.string().min(1, "ISBN is required"),
+  copies: z.coerce.number().int().min(1, "Quantity must be 1 or more"),
+  image: z.string().optional(),
+  description: z.string().optional(),
+});
